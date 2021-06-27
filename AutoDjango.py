@@ -50,10 +50,10 @@ def check_system():
 def install_venv(os_version):
     print("Installing virtualenv ... ")
     if os_version == "Windows":
-        subprocess.run("pip install virtualenv", stdout=subprocess.DEVNULL)
+        os.system("python -m pip install virtualenv >nul 2>&1")
         print("\n[+] virtualenv installed.")
         print("\nCreating A New virtualenv ... ")
-        subprocess.run("virtualenv MAIN/venv", stdout=subprocess.DEVNULL)
+        os.system("python -m virtualenv MAIN/venv >nul 2>&1")
         print("\nActivating The virtualenv ... ")
         subprocess.call('cmd.exe /k MAIN\\venv\\Scripts\\activate.bat')
 
