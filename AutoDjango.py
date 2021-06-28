@@ -83,6 +83,8 @@ def post_installation(project_name, app_name):
     print("[+]\tCreating templates folder ... \n")
     subprocess.run("mkdir static", shell=True)
     print("[+]\tCreating static folder ... \n")
+    subprocess.run("mkdir media", shell=True)
+    print("[+]\tCreating media folder ... \n")
     #Creating new urls.py file in the app 
     print(f"[+]\tCreating urlsCONFIG for {app_name} ... \n")
     urls_content = "from django.urls import path\nfrom .views import home\nurlpatterns = [\n    path(\"\", home, name=\"home\"),\n]"
