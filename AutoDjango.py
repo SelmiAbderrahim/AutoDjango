@@ -77,7 +77,8 @@ def check_system():
 
 #This function will install, create, then activate a virtualenv
 def install_venv(os_version):
-    os.mkdir("MAIN")
+    if not os.path.isdir("MAIN"):
+        os.mkdir("MAIN")
     if not is_installed("virtualenv"):
         pip_install("virtualenv")
     if os_version == "Windows":
