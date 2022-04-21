@@ -3,7 +3,6 @@ from pathlib import Path
 try:
     from termcolor import colored
     from colorama import init
-    #init to enable the color feature in the cmd
     init()
 except:
     subprocess.run("python -m pip install termcolor", stdout=subprocess.DEVNULL, shell=True)
@@ -24,6 +23,29 @@ UNICORN_BASE_TEMPALTE = """
         { % csrf_token % }
     </body >
     </html >
+"""
+
+TAILWIND_BASE_TEMPALTE = """
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+    <title>Django Tailwind</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		{% tailwind_css %}
+	</head>
+
+	<body class="bg-gray-50 font-serif leading-normal tracking-normal">
+		<div class="container mx-auto">
+			<section class="flex items-center justify-center h-screen">
+				<h1 class="text-5xl">Django + Tailwind = ❤️</h1>
+			</section>
+		</div>
+	</body>
+</html>
+
 """
 
 #To make suret he virtualenv is activated
@@ -452,6 +474,23 @@ def install_and_config_package(app_name, project_name, package_list):
         with open(f"{MAIN_PATH}/templates/unicorn-base_tempalte.html", "w") as uni_base_file:
             uni_base_file.write(UNICORN_BASE_TEMPALTE)
 
+    if "tailwind" in package_list:
+        pip_install("django-tailwind") 
+        update_settings_installed_app('tailwind', project_name)
+        subprocess.run(f"python {MAIN_PATH}/manage.py tailwind init", shell=True)
+        shutil.move("theme", MAIN_PATH)
+        update_settings_installed_app('theme', project_name)
+        add_to_the_bottom_of_the_file(f"{MAIN_PATH}/{project_name}/settings.py", "TAILWIND_APP_NAME = 'theme'")
+        internal_ips = "INTERNAL_IPS = ['127.0.0.1',]"
+        add_to_the_bottom_of_the_file(f"{MAIN_PATH}/{project_name}/settings.py", internal_ips)
+        add_to_the_bottom_of_the_file(f"{MAIN_PATH}/{project_name}/settings.py","import platform\nif platform.system() == 'Windows':\n    NPM_BIN_PATH = r'C:\\Program Files\\nodejs\\npm.cmd'")
+        subprocess.run(f"python {MAIN_PATH}/manage.py tailwind install", shell=True)
+        update_settings_installed_app('django_browser_reload', project_name)
+        update_settings_middleware("django_browser_reload.middleware.BrowserReloadMiddleware", False, project_name)
+        update_project_urlpatterns("urlpatterns.append(path('__reload__/', include('django_browser_reload.urls')))", project_name)
+        with open(f"{MAIN_PATH}/templates/tailwind-base_tempalte.html", "w") as uni_base_file:
+            uni_base_file.write(TAILWIND_BASE_TEMPALTE)
+
 
 def main():
     parser = argparse.ArgumentParser(description="A Simple Script That Automates Creating Virtual Environment And Creating Django Project with some extra features.")
@@ -459,7 +498,7 @@ def main():
     parser.add_argument("--config-media-static-templates", nargs="?", const=True, required=False, help="To config 'templates', 'static', 'media' before launching the Django project.")
     parser.add_argument("--post-installation", nargs="?", const=True, required=False, help="To config 'templates', 'static', 'media' before launching the Django project. [same as --config-media-static-templates]")
     parser.add_argument("--install-package", nargs="+", default='all', choices=("djangorestframework",
-                        "django-cors-headers", "django-unicorn",), help="Install one or more Django packages.")
+                        "django-cors-headers", "django-unicorn","tailwind",), help="Install one or more Django packages.")
     parser.add_argument("--django", nargs="?", const=True, required=False, help="To initiate a new Django project.")
     parser.add_argument("--media", nargs="?", const=True, required=False, help="To handle media files in Django.")
     parser.add_argument("--html2django", nargs="?", const=True, required=False, help="Convert any HTML template (project) into Django app.")
@@ -507,7 +546,6 @@ def main():
             zipfile = input("\nEnter The Path Of The Zip File:\t")
             html2django(zipfile, args.static, args.templates)
             run_server()
-
     
 
 if __name__ == "__main__":
